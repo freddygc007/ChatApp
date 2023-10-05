@@ -14,11 +14,15 @@ app.use(express.json());
 app.use(cors());
 
 connectDatabase();
-app.use('/users',userRoutes)
+
+
+
+
+app.use('/api/users',userRoutes)
 
 const server=require('http').createServer(app)
 
-const PORT= process.env.PORT || 5002;
+const PORT= process.env.PORT || 5001;
 const io = require('socket.io')(server,{
     cors:{
         origin:'http://localhost:3000',
@@ -26,7 +30,8 @@ const io = require('socket.io')(server,{
     }
 })
 
-app.get('/rooms',(req,res)=>{
+app.get('/api/rooms',(req,res)=>{
+    console.log(req.url);
     res.json(rooms)
 })
 
@@ -50,14 +55,15 @@ function sortRoomMessagesByDate(messages){
     })
 }
 
+const apiNamespace = io.of('/api');
 
 
 //socket connection
-io.on('connection',(socket)=>{
+apiNamespace.on('connection',(socket)=>{
 
     socket.on('new-user', async()=>{
         const members = await User.find();
-        io.emit('new-user',members)
+        apiNamespace.emit('new-user',members)
     })
 
     socket.on('join-room',async(newRoom,previousRoom)=>{
@@ -75,12 +81,12 @@ io.on('connection',(socket)=>{
         roomMessages=sortRoomMessagesByDate(roomMessages);
 
         //sending messages to room
-        io.to(room).emit('room-messages', roomMessages);
+        apiNamespace.to(room).emit('room-messages', roomMessages);
 
         socket.broadcast.emit('notifications', room)
     })
     
-    app.delete('/logout', async(req,res)=>{
+    app.delete('/api/logout', async(req,res)=>{
         try {
             console.log(req.body);
 
