@@ -1,0 +1,13 @@
+.home__bg{
+    background-image: url(https://www.clubmahindra.com/blog/media/section_images/desktopban-1dd64ec81f39a29.webp);
+    height: 92vh;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
+
+.home-message-icon{
+    margin-left: 10px;
+    display: inline-block;
+}

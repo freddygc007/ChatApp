@@ -1,0 +1,8 @@
+.login__bg{
+    background-image: url(https://watermark.lovepik.com/photo/50042/0928.jpg_wh1200.jpg);
+    height: 92vh;
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    overflow: hidden;
+}
