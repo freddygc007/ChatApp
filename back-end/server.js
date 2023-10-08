@@ -4,6 +4,7 @@ const User =require('./models/User')
 const Message =require('./models/Message')
 require('dotenv').config()
 const userRoutes = require('./routes/userRoutes')
+const path= require('path')
 
 const rooms=['general','tech','finance','crypto'];
 const cors = require('cors');
@@ -15,10 +16,9 @@ app.use(cors());
 
 connectDatabase();
 
+app.use(express.static(path.join(__dirname,'static')))
 
-
-
-app.use('/api/users',userRoutes)
+app.use('/users',userRoutes)
 
 const server=require('http').createServer(app)
 
@@ -30,7 +30,7 @@ const io = require('socket.io')(server,{
     }
 })
 
-app.get('/api/rooms',(req,res)=>{
+app.get('/rooms',(req,res)=>{
     console.log(req.url);
     res.json(rooms)
 })
@@ -55,15 +55,14 @@ function sortRoomMessagesByDate(messages){
     })
 }
 
-const apiNamespace = io.of('/api');
 
 
 //socket connection
-apiNamespace.on('connection',(socket)=>{
+io.on('connection',(socket)=>{
 
     socket.on('new-user', async()=>{
         const members = await User.find();
-        apiNamespace.emit('new-user',members)
+        io.emit('new-user',members)
     })
 
     socket.on('join-room',async(newRoom,previousRoom)=>{
@@ -81,12 +80,12 @@ apiNamespace.on('connection',(socket)=>{
         roomMessages=sortRoomMessagesByDate(roomMessages);
 
         //sending messages to room
-        apiNamespace.to(room).emit('room-messages', roomMessages);
+        io.to(room).emit('room-messages', roomMessages);
 
         socket.broadcast.emit('notifications', room)
     })
     
-    app.delete('/api/logout', async(req,res)=>{
+    app.delete('/logout', async(req,res)=>{
         try {
             console.log(req.body);
 
@@ -106,6 +105,10 @@ apiNamespace.on('connection',(socket)=>{
     })
 
 
+})
+
+app.get('*', (req,res)=>{
+    res.sendFile(path.join(__dirname, 'static/index.html'))
 })
 
 server.listen(PORT,()=>{
